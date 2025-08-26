@@ -1,4 +1,4 @@
 package proyecto.evaluaciones.ui;
 
-public class consolamenu {
+public class ConsolaMenu {
 }

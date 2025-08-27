@@ -10,6 +10,8 @@ public class Pregunta {
     private String respuestaCorrecta;
     private int dificultad;
 
+
+
     public Pregunta(String id, String enunciado, List<String> opciones, String respuestaCorrecta, int dificultad) {
         this.id = Objects.requireNonNull(id);
         this.enunciado = Objects.requireNonNull(enunciado);

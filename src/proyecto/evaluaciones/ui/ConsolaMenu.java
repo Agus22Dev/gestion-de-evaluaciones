@@ -21,12 +21,13 @@ public class ConsolaMenu {
         gestorBancos.crearBanco(mat);
 
         // ----- Crear una Pregunta -----
-        Pregunta p1 = new Pregunta();
-        p1.setId("MAT-001");
-        p1.setEnunciado("¿Cuánto es 2 + 2?");
-        p1.setOpciones(Arrays.asList("A) 3", "B) 4", "C) 5"));
-        p1.setRespuestaCorrecta("B");
-        p1.setDificultad(1);
+        Pregunta p1 = new Pregunta(
+                "MAT-001",
+                "¿Cuánto es 2 + 2?",
+                Arrays.asList("A) 3", "B) 4", "C) 5"),
+                "B",
+                1
+        );
         gestorBancos.agregarPregunta("Matemáticas", p1);
 
         // ----- Crear un Estudiante -----
@@ -84,24 +85,6 @@ public class ConsolaMenu {
     }
 
 
-    private void seedMinimo() {
-        Tema mat = new Tema();
-        mat.setNombre("Matemáticas");
-        mat.setDescripcion("Aritmética básica");
-
-        gestorBancos.crearBanco(mat);
-
-        Pregunta p = new Pregunta();
-        p.setId("MAT-001");
-        p.setEnunciado("2 + 2 = ?");
-        p.setOpciones(Arrays.asList("A) 3", "B) 4", "C) 5"));
-        p.setRespuestaCorrecta("B");
-        p.setDificultad(1);
-
-        gestorBancos.agregarPregunta("Matemáticas", p);
-    }
-
-
     private void crearTemaYBanco() {
         System.out.print("Nombre del tema: ");
         String nombre = sc.next();
@@ -122,26 +105,26 @@ public class ConsolaMenu {
         String tema = sc.next();
         sc.nextLine();
 
-        Pregunta p = new Pregunta();
         System.out.print("ID pregunta: ");
-        p.setId(sc.next());
+        String id = sc.next();
         sc.nextLine();
 
         System.out.print("Enunciado: ");
-        p.setEnunciado(sc.nextLine());
+        String enunciado = sc.nextLine();
 
         List<String> ops = new ArrayList<>();
         for (char c = 'A'; c <= 'C'; c++) {
             System.out.print("Opción " + c + ": ");
             ops.add(c + ") " + sc.nextLine());
         }
-        p.setOpciones(ops);
 
         System.out.print("Respuesta correcta (A/B/C): ");
-        p.setRespuestaCorrecta(sc.next());
+        String respuesta = sc.next();
 
         System.out.print("Dificultad (1-3): ");
-        p.setDificultad(leerEntero());
+        int dificultad = leerEntero();
+
+        Pregunta p = new Pregunta(id, enunciado, ops, respuesta, dificultad);
 
         try {
             gestorBancos.agregarPregunta(tema, p);
@@ -188,7 +171,9 @@ public class ConsolaMenu {
         t.setNombre(tema);
         var ev = gestorEvals.crearEvaluacion(id, titulo, fecha, t);
 
-        ev.agregarPregunta(banco.getPreguntas(), 1);
+        for (Pregunta q : banco.getPreguntas()) {
+            ev.agregarPregunta(q);
+        }
         System.out.println("Evaluación creada con " + banco.getPreguntas().size() + " preguntas.");
     }
 

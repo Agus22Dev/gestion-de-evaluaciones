@@ -66,10 +66,20 @@ El proyecto está organizado en **paquetes Java** siguiendo un diseño modular:
    ```bash
    git clone https://github.com/Agus22Dev/gestion-de-evaluaciones.git
    cd gestion-de-evaluaciones
-## Compilar 
-javac src/proyecto/evaluaciones/ui/Main.java
+## Compilar
+Para compilar **todo el proyecto** y generar los archivos `.class` en la carpeta `out`, 
+abre una terminal en la carpeta raíz del proyecto y ejecuta (para PowerShell en Windows):
+
+javac -d out (Get-ChildItem -Recurse -Filter *.java | ForEach-Object { $_.FullName })
+
+Si el comando anterior no te funciona, puedes usar este alternativo:
+
+Get-ChildItem -Recurse -Filter *.java | ForEach-Object { javac -d out $_.FullName }
+
+src/proyecto/evaluaciones/Main.java
+
 ## Ejecutar 
-java proyecto.evaluaciones.ui.Main
+java -cp out proyecto.evaluaciones.Main
 
 ---
 

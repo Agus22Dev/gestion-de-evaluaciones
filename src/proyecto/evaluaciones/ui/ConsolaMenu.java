@@ -45,8 +45,8 @@ public class ConsolaMenu {
         do {
             System.out.println("\n--- Menú ---");
             System.out.println("1. Crear Tema + Banco");
-            System.out.println("2. Agregar Pregunta a Banco (SIA1.8 Inserción)");
-            System.out.println("3. Listar Preguntas de Banco (SIA1.8 Listado)");
+            System.out.println("2. Agregar Pregunta a Banco ");
+            System.out.println("3. Listar Preguntas de Banco");
             System.out.println("4. Crear Evaluación desde Banco");
             System.out.println("5. Registrar Nota");
             System.out.println("6. Listar Notas de Evaluación");

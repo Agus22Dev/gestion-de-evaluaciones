@@ -23,6 +23,7 @@ public class BancoPreguntas {
         preguntas.add(Objects.requireNonNull(p));
     }
 
+
     public Pregunta agregarPregunta(String id, String enunciado, List<String> opciones, String respuestaCorrecta, int dificultad) {
         Pregunta q = new Pregunta(id, enunciado, opciones, respuestaCorrecta, dificultad);
         preguntas.add(q);

@@ -40,6 +40,7 @@ public class ConsolaMenu {
 
     public void iniciar() {
         seedMinimo();
+        gestorNotas.cargarDesdeCSV("csvs/notas.csv");
 
         int op;
         do {
@@ -53,6 +54,7 @@ public class ConsolaMenu {
             System.out.println("9. Salir");
             System.out.print("Opción: ");
             op = leerEntero();
+            sc.nextLine();
 
             switch (op) {
                 case 1:
@@ -74,6 +76,7 @@ public class ConsolaMenu {
                     listarNotas();
                     break;
                 case 9:
+                    gestorNotas.guardarEnCSV("csvs/notas.csv");
                     System.out.println("Saliendo...");
                     break;
                 default:
@@ -179,15 +182,19 @@ public class ConsolaMenu {
 
     private void registrarNota() {
         System.out.print("ID evaluación: ");
-        String ev = sc.next();
+        String ev = sc.nextLine();
+
         System.out.print("RUT estudiante: ");
-        String rut = sc.next();
+        String rut = sc.nextLine();
+
         System.out.print("Nota (1.0-7.0): ");
-        double n = sc.nextDouble();
+        double n = Double.parseDouble(sc.nextLine()); // Eingabe als String, dann in double umwandeln
 
         gestorNotas.registrarNota(ev, rut, n);
         System.out.println("Nota registrada.");
     }
+
+
 
     private void listarNotas() {
         System.out.print("ID evaluación: ");

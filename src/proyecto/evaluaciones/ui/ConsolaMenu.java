@@ -2,6 +2,8 @@ package proyecto.evaluaciones.ui;
 
 import proyecto.evaluaciones.dominio.*;
 import proyecto.evaluaciones.servicio.*;
+import proyecto.evaluaciones.excepciones.PersistenciaException;
+import proyecto.evaluaciones.excepciones.ValidacionException;
 
 import java.util.*;
 
@@ -40,7 +42,15 @@ public class ConsolaMenu {
 
     public void iniciar() {
         seedMinimo();
-        gestorNotas.cargarDesdeCSV("csvs/notas.csv");
+        
+        // SIA2.8 - Try-catch para cargar datos CSV
+        try {
+            gestorNotas.cargarDesdeCSV("csvs/notas.csv");
+        } catch (PersistenciaException e) {
+            System.err.println("Advertencia: " + e.getMensajeUsuario());
+        } catch (Exception e) {
+            System.err.println("Error inesperado al cargar notas: " + e.getMessage());
+        }
 
         int op;
         do {
@@ -76,8 +86,16 @@ public class ConsolaMenu {
                     listarNotas();
                     break;
                 case 9:
-                    gestorNotas.guardarEnCSV("csvs/notas.csv");
-                    System.out.println("Saliendo...");
+                    // SIA2.8 - Try-catch para guardar datos CSV
+                    try {
+                        gestorNotas.guardarEnCSV("csvs/notas.csv");
+                        System.out.println("Saliendo...");
+                    } catch (PersistenciaException e) {
+                        System.err.println("Error al guardar: " + e.getMensajeUsuario());
+                        System.out.println("Saliendo sin guardar...");
+                    } catch (Exception e) {
+                        System.err.println("Error inesperado al guardar: " + e.getMessage());
+                    }
                     break;
                 default:
                     System.out.println("Opción inválida");
@@ -188,10 +206,17 @@ public class ConsolaMenu {
         String rut = sc.nextLine();
 
         System.out.print("Nota (1.0-7.0): ");
-        double n = Double.parseDouble(sc.nextLine()); // Eingabe als String, dann in double umwandeln
+        double n = Double.parseDouble(sc.nextLine());
 
-        gestorNotas.registrarNota(ev, rut, n);
-        System.out.println("Nota registrada.");
+        // SIA2.8 - Try-catch para registrar nota con excepciones personalizadas
+        try {
+            gestorNotas.registrarNota(ev, rut, n);
+            System.out.println("Nota registrada.");
+        } catch (ValidacionException e) {
+            System.err.println("Error de validación: " + e.getMensajeUsuario());
+        } catch (Exception e) {
+            System.err.println("Error inesperado: " + e.getMessage());
+        }
     }
 
 

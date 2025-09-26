@@ -3,7 +3,7 @@ package proyecto.evaluaciones.ui;
 import proyecto.evaluaciones.servicio.GestorNotas;
 import proyecto.evaluaciones.dominio.RegistroNotas;
 import proyecto.evaluaciones.excepciones.ValidacionException;
-import proyecto.evaluaciones.excepciones.PersistenciaException;
+import proyecto.evaluaciones.excepciones.PersistenciaException; // Agregar este import
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

@@ -1,0 +1,7 @@
+id,titulo,fecha,tema,ponderacion,preguntas
+EV-001,Primera Prueba Matemáticas,2025-10-01,Matemáticas,0.30,MAT-001;MAT-002;MAT-003
+EV-002,Control Historia Chile,2025-10-15,Historia,0.20,HIS-001;HIS-002;HIS-003
+EV-003,Certamen Física I,2025-11-01,Física,0.50,FIS-001;FIS-002;FIS-003
+EV-004,Prueba Final Matemáticas,2025-12-10,Matemáticas,0.40,MAT-001;MAT-002;MAT-003
+EV-005,Examen Literatura,2025-12-15,Literatura,0.35,LIT-001;LIT-002
+EV-006,Control Biología,2025-12-20,Biología,0.25,BIO-001

@@ -1,0 +1,13 @@
+tema,id,enunciado,opcionA,opcionB,opcionC,opcionD,respuestaCorrecta,dificultad
+Matemáticas,MAT-001,¿Cuánto es 2 + 2?,3,4,5,6,B,1
+Matemáticas,MAT-002,¿Cuál es la raíz cuadrada de 16?,2,4,8,16,B,2
+Matemáticas,MAT-003,¿Cuánto es 3 x 3?,6,12,9,15,C,1
+Historia,HIS-001,¿En qué año fue la independencia de Chile?,1810,1818,1830,1845,A,2
+Historia,HIS-002,¿Quién fue el primer presidente de Chile?,O'Higgins,Carrera,Portales,Bulnes,C,2
+Historia,HIS-003,¿En qué año se fundó Santiago?,1541,1550,1560,1570,A,3
+Física,FIS-001,¿Cuál es la unidad de fuerza?,Newton,Pascal,Joule,Watt,A,2
+Física,FIS-002,¿Qué mide la aceleración?,Velocidad/tiempo,Distancia/tiempo,Masa/tiempo,Energía/tiempo,A,3
+Física,FIS-003,¿Cuál es la unidad de energía?,Newton,Pascal,Joule,Metro,C,2
+Biología,BIO-001,¿Cuántas cámaras tiene el corazón?,2,3,4,5,C,2
+Literatura,LIT-001,¿Quién escribió La Araucana?,Ercilla,Neruda,Mistral,Huidobro,A,3
+Literatura,LIT-002,¿Género del Quijote?,Lírico,Dramático,Épico,Narrativo,D,2

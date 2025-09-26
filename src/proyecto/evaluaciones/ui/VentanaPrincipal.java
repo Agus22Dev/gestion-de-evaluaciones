@@ -1,19 +1,19 @@
 package proyecto.evaluaciones.ui;
 
 import proyecto.evaluaciones.servicio.*;
-import proyecto.evaluaciones.dominio.*;
-import proyecto.evaluaciones.excepciones.PersistenciaException;
+import proyecto.evaluaciones.excepciones.PersistenciaException; // Agregar este import
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.io.File;
 
 public class VentanaPrincipal extends JFrame {
-    private final GestorBancos gestorBancos;
-    private final GestorEvaluaciones gestorEvaluaciones;
-    private final GestorNotas gestorNotas;
+    private final GestorBancos gestorBancos = new GestorBancos();
+    private final GestorEvaluaciones gestorEvaluaciones = new GestorEvaluaciones();
+    private final GestorNotas gestorNotas = new GestorNotas();
     
     private JPanel panelPrincipal;
     private JButton btnGestionPreguntas;
@@ -22,13 +22,11 @@ public class VentanaPrincipal extends JFrame {
     private JButton btnSalir;
     
     public VentanaPrincipal() {
-        this.gestorBancos = new GestorBancos();
-        this.gestorEvaluaciones = new GestorEvaluaciones();
-        this.gestorNotas = new GestorNotas();
         
         initComponents();
         initEventHandlers();
         cargarDatosIniciales();
+        inicializarDirectorios();
     }
     
     private void initComponents() {
@@ -110,54 +108,71 @@ public class VentanaPrincipal extends JFrame {
         
         btnSalir.addActionListener(e -> {
             try {
-                // SIA2.8 - Try-catch para manejo de excepciones al guardar
-                gestorNotas.guardarEnCSV("csvs/notas.csv");
-                System.exit(0);
-            } catch (PersistenciaException ex) {
-                // SIA2.8 - Manejo específico de errores de persistencia
-                int opcion = JOptionPane.showConfirmDialog(this, 
-                    "Error al guardar los datos:\n" + ex.getMensajeUsuario() + 
-                    "\n\n¿Desea salir sin guardar?", 
-                    "Error al Guardar", 
-                    JOptionPane.YES_NO_OPTION, 
-                    JOptionPane.WARNING_MESSAGE);
+                // Asegurarnos que existan las carpetas
+                File dirCsvs = new File("csvs");
+                File dirReportes = new File("reportes");
+                if (!dirCsvs.exists()) dirCsvs.mkdirs();
+                if (!dirReportes.exists()) dirReportes.mkdirs();
+
+                // Generar reporte
+                String reportPath = "reportes/reporte_" + 
+                    java.time.LocalDateTime.now().format(
+                        java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm")) + 
+                    ".txt";
                 
-                if (opcion == JOptionPane.YES_OPTION) {
+                // Guardar todos los datos
+                try {
+                    gestorBancos.guardarEnCSV();
+                    gestorEvaluaciones.guardarEnCSV();
+                    gestorNotas.guardarEnCSV("csvs/notas.csv");
+                    
+                    // Generar reporte final
+                    gestorNotas.generarReporteTXT(reportPath, gestorBancos, gestorEvaluaciones);
+                    
+                    JOptionPane.showMessageDialog(this,
+                        "Datos guardados y reporte generado en: " + reportPath,
+                        "Guardado Exitoso", JOptionPane.INFORMATION_MESSAGE);
+                        
                     System.exit(0);
+                } catch (PersistenciaException ex) {
+                    int opcion = JOptionPane.showConfirmDialog(this, 
+                        "Error al guardar los datos:\n" + ex.getMensajeUsuario() + 
+                        "\n\n¿Desea salir sin guardar?", 
+                        "Error al Guardar", 
+                        JOptionPane.YES_NO_OPTION, 
+                        JOptionPane.WARNING_MESSAGE);
+                    
+                    if (opcion == JOptionPane.YES_OPTION) {
+                        System.exit(0);
+                    }
                 }
             } catch (Exception ex) {
-                // SIA2.8 - Manejo de errores generales
-                JOptionPane.showMessageDialog(this, 
-                    "Error inesperado: " + ex.getMessage(), 
-                    "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,
+                    "Error inesperado: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
             }
         });
     }
     
     private void cargarDatosIniciales() {
         try {
-            // Crear datos iniciales
-            Tema matematicas = new Tema();
-            matematicas.setNombre("Matemáticas");
-            matematicas.setDescripcion("Operaciones básicas");
-            gestorBancos.crearBanco(matematicas);
-            
-            Pregunta p1 = new Pregunta("MAT-001", "¿Cuánto es 2 + 2?",
-                java.util.Arrays.asList("A) 3", "B) 4", "C) 5"), "B", 1);
-            gestorBancos.agregarPregunta("Matemáticas", p1);
-            
-            // Cargar notas desde CSV
+            // Cargar datos desde CSV
+            gestorBancos.cargarDesdeCSV();
+            // Pass gestorBancos as parameter
+            gestorEvaluaciones.cargarDesdeCSV(gestorBancos);
             gestorNotas.cargarDesdeCSV("csvs/notas.csv");
-            
         } catch (PersistenciaException e) {
-            // SIA2.8 - Manejo específico de errores de persistencia
-            JOptionPane.showMessageDialog(this, 
-                "Advertencia al cargar datos:\n" + e.getMensajeUsuario(), 
+            JOptionPane.showMessageDialog(this,
+                "Advertencia al cargar datos:\n" + e.getMensajeUsuario(),
                 "Advertencia", JOptionPane.WARNING_MESSAGE);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar datos iniciales: " + e.getMessage(), 
-                "Advertencia", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    private void inicializarDirectorios() {
+        File dirReportes = new File("reportes");
+        if (!dirReportes.exists()) {
+            dirReportes.mkdirs();
         }
     }
 }

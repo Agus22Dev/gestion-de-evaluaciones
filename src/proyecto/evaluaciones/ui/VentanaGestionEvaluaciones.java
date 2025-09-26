@@ -2,6 +2,7 @@ package proyecto.evaluaciones.ui;
 
 import proyecto.evaluaciones.servicio.*;
 import proyecto.evaluaciones.dominio.*;
+import proyecto.evaluaciones.excepciones.PersistenciaException; // Add this import
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -17,7 +18,7 @@ public class VentanaGestionEvaluaciones extends JFrame {
     private JTextField txtId, txtTitulo, txtFecha;
     private JComboBox<String> cbTemas;
     private JSpinner spinnerPonderacion;
-    private JButton btnCrear, btnVer, btnActualizar;
+    private JButton btnCrear, btnVer, btnActualizar, btnEliminar;
     
     public VentanaGestionEvaluaciones(GestorEvaluaciones gestorEvaluaciones, GestorBancos gestorBancos) {
         this.gestorEvaluaciones = gestorEvaluaciones;
@@ -102,12 +103,15 @@ public class VentanaGestionEvaluaciones extends JFrame {
         JPanel panelBotones = new JPanel(new FlowLayout());
         btnCrear = new JButton("Crear Evaluación");
         btnVer = new JButton("Ver Detalles");
+        btnEliminar = new JButton("Eliminar");
         btnActualizar = new JButton("Actualizar Lista");
         
         btnVer.setEnabled(false);
+        btnEliminar.setEnabled(false);
         
         panelBotones.add(btnCrear);
         panelBotones.add(btnVer);
+        panelBotones.add(btnEliminar);
         panelBotones.add(btnActualizar);
         
         gbc.gridx = 0; gbc.gridy = 3;
@@ -121,14 +125,9 @@ public class VentanaGestionEvaluaciones extends JFrame {
         // Selección de tabla
         tablaEvaluaciones.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                try {
-                    int filaSeleccionada = tablaEvaluaciones.getSelectedRow();
-                    btnVer.setEnabled(filaSeleccionada >= 0);
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, 
-                        "Error al seleccionar evaluación: " + ex.getMessage(), 
-                        "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                boolean haySeleccion = tablaEvaluaciones.getSelectedRow() >= 0;
+                btnVer.setEnabled(haySeleccion);
+                btnEliminar.setEnabled(haySeleccion);
             }
         });
         
@@ -149,6 +148,9 @@ public class VentanaGestionEvaluaciones extends JFrame {
                     "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
+        
+        // Botón eliminar
+        btnEliminar.addActionListener(e -> eliminarEvaluacion());
     }
     
     private void cargarTemas() {
@@ -321,6 +323,50 @@ public class VentanaGestionEvaluaciones extends JFrame {
         spinnerPonderacion.setValue(1.0);
         if (cbTemas.getItemCount() > 0) {
             cbTemas.setSelectedIndex(0);
+        }
+    }
+    
+    private void eliminarEvaluacion() {
+        try {
+            int filaSeleccionada = tablaEvaluaciones.getSelectedRow();
+            if (filaSeleccionada < 0) {
+                return;
+            }
+
+            String id = (String) modeloTabla.getValueAt(filaSeleccionada, 0);
+            String titulo = (String) modeloTabla.getValueAt(filaSeleccionada, 1);
+
+            int confirmacion = JOptionPane.showConfirmDialog(this,
+                String.format("¿Está seguro que desea eliminar la evaluación '%s' (%s)?", titulo, id),
+                "Confirmar Eliminación",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+
+            if (confirmacion == JOptionPane.YES_OPTION) {
+                if (gestorEvaluaciones.eliminarEvaluacion(id)) {
+                    actualizarTabla();
+                    limpiarFormulario();
+                    JOptionPane.showMessageDialog(this,
+                        "Evaluación eliminada correctamente.",
+                        "Éxito",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                    // Persistir cambios inmediatamente
+                    try {
+                        gestorEvaluaciones.guardarEnCSV();
+                    } catch (PersistenciaException ex) {
+                        JOptionPane.showMessageDialog(this,
+                            "Error al guardar cambios: " + ex.getMensajeUsuario(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                "Error al eliminar evaluación: " + ex.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
         }
     }
 }

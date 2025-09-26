@@ -8,6 +8,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class VentanaGestionPreguntas extends JFrame {
     private final GestorBancos gestorBancos;
@@ -16,7 +17,7 @@ public class VentanaGestionPreguntas extends JFrame {
     private JComboBox<String> cbTemas;
     private JTable tablaPrevias;
     private DefaultTableModel modeloTabla;
-    private JTextField txtId, txtEnunciado, txtOpcionA, txtOpcionB, txtOpcionC;
+    private JTextField txtId, txtEnunciado, txtOpcionA, txtOpcionB, txtOpcionC, txtOpcionD;
     private JComboBox<String> cbRespuestaCorrecta;
     private JSpinner spinnerDificultad;
     private JButton btnAgregar, btnEditar, btnEliminar, btnActualizar;
@@ -136,15 +137,22 @@ public class VentanaGestionPreguntas extends JFrame {
         txtOpcionC = new JTextField(20);
         panel.add(txtOpcionC, gbc);
         
-        // Respuesta correcta
+        // Add option D
+        txtOpcionD = new JTextField(20);
         gbc.gridx = 0; gbc.gridy = 5;
+        panel.add(new JLabel("Opción D:"), gbc);
+        gbc.gridx = 1;
+        panel.add(txtOpcionD, gbc);
+        
+        // Respuesta correcta
+        gbc.gridx = 0; gbc.gridy = 6;
         panel.add(new JLabel("Respuesta:"), gbc);
         gbc.gridx = 1;
-        cbRespuestaCorrecta = new JComboBox<>(new String[]{"A", "B", "C"});
+        cbRespuestaCorrecta = new JComboBox<>(new String[]{"A", "B", "C", "D"});
         panel.add(cbRespuestaCorrecta, gbc);
         
         // Dificultad
-        gbc.gridx = 0; gbc.gridy = 6;
+        gbc.gridx = 0; gbc.gridy = 7;
         panel.add(new JLabel("Dificultad:"), gbc);
         gbc.gridx = 1;
         spinnerDificultad = new JSpinner(new SpinnerNumberModel(1, 1, 5, 1));
@@ -166,7 +174,7 @@ public class VentanaGestionPreguntas extends JFrame {
         panelBotones.add(btnEliminar);
         panelBotones.add(btnActualizar);
         
-        gbc.gridx = 0; gbc.gridy = 7;
+        gbc.gridx = 0; gbc.gridy = 8;
         gbc.gridwidth = 3;
         panel.add(panelBotones, gbc);
         
@@ -265,68 +273,89 @@ public class VentanaGestionPreguntas extends JFrame {
     
     private void cargarPreguntaEnFormulario() {
         try {
-            String temaSeleccionado = (String) cbTemas.getSelectedItem();
-            if (temaSeleccionado != null && filaSeleccionada >= 0) {
-                BancoPreguntas banco = gestorBancos.getBanco(temaSeleccionado);
-                if (banco != null) {
-                    List<Pregunta> preguntas = banco.getPreguntas();
-                    if (filaSeleccionada < preguntas.size()) {
-                        Pregunta p = preguntas.get(filaSeleccionada);
-                        txtId.setText(p.getId());
-                        txtEnunciado.setText(p.getEnunciado());
-                        
-                        List<String> opciones = p.getOpciones();
-                        if (opciones.size() >= 3) {
-                            txtOpcionA.setText(opciones.get(0).substring(3)); // Remove "A) "
-                            txtOpcionB.setText(opciones.get(1).substring(3)); // Remove "B) "
-                            txtOpcionC.setText(opciones.get(2).substring(3)); // Remove "C) "
-                        }
-                        
-                        cbRespuestaCorrecta.setSelectedItem(p.getRespuestaCorrecta());
-                        spinnerDificultad.setValue(p.getDificultad());
+            int fila = tablaPrevias.getSelectedRow();
+            if (fila < 0) return;
+
+            String id = (String) modeloTabla.getValueAt(fila, 0);
+            String nombreTema = (String) cbTemas.getSelectedItem();
+            BancoPreguntas banco = gestorBancos.getBanco(nombreTema);
+            
+            if (banco != null) {
+                Optional<Pregunta> preguntaOpt = banco.getPreguntas().stream()
+                    .filter(p -> p.getId().equals(id))
+                    .findFirst();
+                    
+                if (preguntaOpt.isPresent()) {
+                    Pregunta p = preguntaOpt.get();
+                    txtId.setText(p.getId());
+                    txtEnunciado.setText(p.getEnunciado());
+                    
+                    // Asegurar que hay 4 opciones antes de asignarlas
+                    List<String> opciones = p.getOpciones();
+                    if (opciones.size() >= 4) {
+                        txtOpcionA.setText(opciones.get(0));
+                        txtOpcionB.setText(opciones.get(1));
+                        txtOpcionC.setText(opciones.get(2));
+                        txtOpcionD.setText(opciones.get(3));  // Agregar opción D
                     }
+                    
+                    cbRespuestaCorrecta.setSelectedItem(p.getRespuestaCorrecta());
+                    spinnerDificultad.setValue(p.getDificultad());
+                    
+                    btnEditar.setEnabled(true);
+                    btnEliminar.setEnabled(true);
+                    btnActualizar.setEnabled(true);
+                    btnAgregar.setEnabled(false);
+                    
+                    filaSeleccionada = fila;
                 }
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Error al cargar pregunta: " + e.getMessage(), 
-                "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Error al cargar pregunta: " + e.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
         }
     }
     
     private void agregarPregunta() {
         try {
-            String temaSeleccionado = (String) cbTemas.getSelectedItem();
-            if (temaSeleccionado == null) {
-                JOptionPane.showMessageDialog(this, "Seleccione un tema.", "Error", JOptionPane.ERROR_MESSAGE);
+            if (!validarFormulario()) {
                 return;
             }
-            
-            if (!validarFormulario()) return;
-            
+
+            String tema = (String) cbTemas.getSelectedItem();
             String id = txtId.getText().trim();
             String enunciado = txtEnunciado.getText().trim();
             List<String> opciones = Arrays.asList(
-                "A) " + txtOpcionA.getText().trim(),
-                "B) " + txtOpcionB.getText().trim(),
-                "C) " + txtOpcionC.getText().trim()
+                txtOpcionA.getText().trim(),
+                txtOpcionB.getText().trim(),
+                txtOpcionC.getText().trim(),
+                txtOpcionD.getText().trim()  // Agregar opción D
             );
             String respuesta = (String) cbRespuestaCorrecta.getSelectedItem();
             int dificultad = (Integer) spinnerDificultad.getValue();
-            
-            Pregunta nuevaPregunta = new Pregunta(id, enunciado, opciones, respuesta, dificultad);
-            gestorBancos.agregarPregunta(temaSeleccionado, nuevaPregunta);
-            
+
+            Pregunta p = new Pregunta(id, enunciado, opciones, respuesta, dificultad);
+            gestorBancos.agregarPregunta(tema, p);
+
             actualizarTabla();
             limpiarFormulario();
-            JOptionPane.showMessageDialog(this, "Pregunta agregada exitosamente.");
+            
+            JOptionPane.showMessageDialog(this, 
+                "Pregunta agregada correctamente.", 
+                "Éxito", JOptionPane.INFORMATION_MESSAGE);
             
         } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, "Error de validación: " + e.getMessage(), 
-                "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Error de validación: " + e.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error inesperado: " + e.getMessage(), 
-                "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                "Error inesperado: " + e.getMessage(),
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
         }
     }
     
@@ -432,6 +461,7 @@ public class VentanaGestionPreguntas extends JFrame {
         txtOpcionA.setText("");
         txtOpcionB.setText("");
         txtOpcionC.setText("");
+        txtOpcionD.setText("");
         cbRespuestaCorrecta.setSelectedIndex(0);
         spinnerDificultad.setValue(1);
         filaSeleccionada = -1;

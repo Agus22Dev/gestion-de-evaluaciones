@@ -15,12 +15,11 @@ public class Pregunta {
     public Pregunta(String id, String enunciado, List<String> opciones, String respuestaCorrecta, int dificultad) {
         this.id = Objects.requireNonNull(id);
         this.enunciado = Objects.requireNonNull(enunciado);
-        // Validate 4 options
+        
         if (opciones == null || opciones.size() != 4) {
             throw new IllegalArgumentException("Debe proporcionar exactamente 4 opciones");
         }
         this.opciones = opciones;
-        // Validate correct answer is A, B, C or D
         if (!respuestaCorrecta.matches("[A-D]")) {
             throw new IllegalArgumentException("La respuesta correcta debe ser A, B, C o D");
         }
